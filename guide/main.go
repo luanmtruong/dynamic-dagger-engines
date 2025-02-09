@@ -4,7 +4,7 @@ package main
 import (
 	"context"
 	"dagger/guide/internal/dagger"
-	"encoding/base64"
+	// "encoding/base64"
 	"fmt"
 	"math/rand"
 	"time"
@@ -77,17 +77,16 @@ func (m *Guide) Up(ctx context.Context,
 	cluster *dagger.File,
 ) (*dagger.File, error) {
 	kubeconfig, err := m.CreateCluster(ctx, cluster)
-
-	plain, _ := kubeconfig.Contents(ctx)
-	kubeconfig_sec := dag.Secret(plain)
-
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err := m.InstallArgo(ctx, kubeconfig_sec); err != nil {
-		return nil, err
-	}
+	plain, _ := kubeconfig.Contents(ctx)
+	kubeconfig_sec := dag.SetSecret("kubeconfig", plain)
+
+	// if _, err := m.InstallArgo(ctx, kubeconfig_sec); err != nil {
+	// 	return nil, err
+	// }
 
 	if _, err := m.InstallArgoGenerator(ctx, kubeconfig_sec); err != nil {
 		return nil, err
@@ -156,12 +155,12 @@ func (m *Guide) InstallArgo(ctx context.Context, kubeconfig *dagger.Secret) (str
 
 // InstallArgoGenerator installs the argocd-github-release-generator on the kubernetes cluster.
 func (m *Guide) InstallArgoGenerator(ctx context.Context, kubeconfig *dagger.Secret) (string, error) {
-	dst := []byte{}
-	base64.RawStdEncoding.Encode(dst, randStr(10))
+	// dst := []byte{}
+	// base64.RawStdEncoding.Encode(dst, randStr(10))
 
 	return m.kubectl(kubeconfig).Container().
-		WithEnvVariable("ARGOCD_TOKEN", string(dst)).
-		WithExec([]string{"sh", "-c", "curl -s https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.4/k8s/install.yaml | envsubst | kubectl apply -f -"}).
+		WithEnvVariable("ARGOCD_TOKEN", "MTIzcXdlYXNkNiM=").
+		WithExec([]string{"sh", "-c", "curl -s https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.5/k8s/install.yaml | envsubst | kubectl apply -f -"}).
 		Stdout(ctx)
 }
 
