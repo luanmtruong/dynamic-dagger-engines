@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"dagger/guide/internal/dagger"
 	"encoding/base64"
 	"fmt"
 	"math/rand"
@@ -10,10 +11,10 @@ import (
 )
 
 const (
-	ArgoVersion                = "v2.9.3"
-	EksctlVersion              = "v0.169.0"
-	KubectlVersion             = "v1.29.1"
-	AWSIamAuthenticatorVersion = "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.14/aws-iam-authenticator_0.6.14_linux_amd64"
+	ArgoVersion                = "v2.14.2"
+	EksctlVersion              = "v0.203.0"
+	KubectlVersion             = "v1.32.0"
+	AWSIamAuthenticatorVersion = "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.30/aws-iam-authenticator_0.6.30_linux_amd64"
 
 	defaultCluster = `apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
@@ -21,7 +22,7 @@ kind: ClusterConfig
 metadata:
   name: dynamic-dagger-engines-guide
   region: us-east-2
-  version: '1.28'
+  version: '1.32'
   tags:
     karpenter.sh/discovery: dynamic-dagger-engines-guide
  
@@ -41,7 +42,7 @@ managedNodeGroups:
     propagateASGTags: true
 
 karpenter:
-  version: 'v0.32.6'
+  version: '1.2.1'
   createServiceAccount: true 
   withSpotInterruptionQueue: true
 
@@ -51,15 +52,15 @@ addons:
 )
 
 type Guide struct {
-	AwsConfig  *Secret
-	AwsCreds   *Secret
+	AwsConfig  *dagger.Secret
+	AwsCreds   *dagger.Secret
 	AwsProfile string
 }
 
 func New(
 	// +optional
-	awsConfig *Secret,
-	awsCreds *Secret,
+	awsConfig *dagger.Secret,
+	awsCreds *dagger.Secret,
 	awsProfile string,
 ) *Guide {
 	return &Guide{
@@ -73,18 +74,22 @@ func New(
 // of t3.medium instances in us-east-2 with Karpenter already installed.
 func (m *Guide) Up(ctx context.Context,
 	// +optional
-	cluster *File,
-) (*File, error) {
+	cluster *dagger.File,
+) (*dagger.File, error) {
 	kubeconfig, err := m.CreateCluster(ctx, cluster)
+
+	plain, _ := kubeconfig.Contents(ctx)
+	kubeconfig_sec := dag.Secret(plain)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err := m.InstallArgo(ctx, kubeconfig); err != nil {
+	if _, err := m.InstallArgo(ctx, kubeconfig_sec); err != nil {
 		return nil, err
 	}
 
-	if _, err := m.InstallArgoGenerator(ctx, kubeconfig); err != nil {
+	if _, err := m.InstallArgoGenerator(ctx, kubeconfig_sec); err != nil {
 		return nil, err
 	}
 
@@ -96,11 +101,12 @@ func (m *Guide) Up(ctx context.Context,
 // config file when setting everything up you should provide that same one here.
 func (m *Guide) Teardown(ctx context.Context,
 	// +optional
-	cluster *File) (string, error) {
+	cluster *dagger.File,
+) (string, error) {
 	if cluster == nil {
 		cluster = dag.Container().
-			WithNewFile("/cluster.yaml", ContainerWithNewFileOpts{
-				Contents: defaultCluster,
+			WithNewFile("/cluster.yaml", defaultCluster, dagger.ContainerWithNewFileOpts{
+				Permissions: 0o755,
 			}).
 			File("/cluster.yaml")
 	}
@@ -114,14 +120,13 @@ func (m *Guide) Teardown(ctx context.Context,
 // nodes. It returns the kubeconfig of the newly created cluster.
 func (m *Guide) CreateCluster(ctx context.Context,
 	// +optional
-	cluster *File,
-) (*File, error) {
-	// if no cluster config file was specified then we initialize with a default
-	// one
+	cluster *dagger.File,
+) (*dagger.File, error) {
+	// if no cluster config file was specified then we initialize with a default one
 	if cluster == nil {
 		cluster = dag.Container().
-			WithNewFile("/cluster.yaml", ContainerWithNewFileOpts{
-				Contents: defaultCluster,
+			WithNewFile("/cluster.yaml", defaultCluster, dagger.ContainerWithNewFileOpts{
+				Permissions: 0o755,
 			}).
 			File("/cluster.yaml")
 	}
@@ -135,7 +140,7 @@ func (m *Guide) CreateCluster(ctx context.Context,
 }
 
 // Installs ArgoCD on the provided EKS cluster.
-func (m *Guide) InstallArgo(ctx context.Context, kubeconfig *Secret) (string, error) {
+func (m *Guide) InstallArgo(ctx context.Context, kubeconfig *dagger.Secret) (string, error) {
 	kubectl := m.kubectl(kubeconfig)
 	if _, err := kubectl.Exec(ctx, []string{"create", "namespace", "argocd"}); err != nil {
 		return "", fmt.Errorf("failed to create argocd namespace: %s", err)
@@ -149,9 +154,8 @@ func (m *Guide) InstallArgo(ctx context.Context, kubeconfig *Secret) (string, er
 	return "sucessfully installed ArgoCD", nil
 }
 
-// InstallArgoGenerator installs the argocd-github-release-generator on the
-// kubernetes cluster.
-func (m *Guide) InstallArgoGenerator(ctx context.Context, kubeconfig *Secret) (string, error) {
+// InstallArgoGenerator installs the argocd-github-release-generator on the kubernetes cluster.
+func (m *Guide) InstallArgoGenerator(ctx context.Context, kubeconfig *dagger.Secret) (string, error) {
 	dst := []byte{}
 	base64.RawStdEncoding.Encode(dst, randStr(10))
 
@@ -161,12 +165,12 @@ func (m *Guide) InstallArgoGenerator(ctx context.Context, kubeconfig *Secret) (s
 		Stdout(ctx)
 }
 
-func (m *Guide) eksctl(cluster *File) *Eksctl {
-	return dag.Eksctl(m.AwsCreds, m.AwsProfile, cluster, EksctlOpts{Version: EksctlVersion})
+func (m *Guide) eksctl(cluster *dagger.File) *dagger.Eksctl {
+	return dag.Eksctl(m.AwsCreds, m.AwsProfile, cluster, dagger.EksctlOpts{Version: EksctlVersion})
 }
 
-func (m *Guide) kubectl(kubeconfig *Secret) *KubectlCli {
-	opts := KubectlKubectlEksOpts{}
+func (m *Guide) kubectl(kubeconfig *dagger.Secret) *dagger.KubectlCli {
+	opts := dagger.KubectlKubectlEksOpts{}
 	if m.AwsConfig != nil {
 		opts.AwsConfig = m.AwsConfig
 	}
