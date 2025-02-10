@@ -4,7 +4,7 @@ metadata:
   name: dagger-runners
   namespace: dagger-runners
 spec:
-  amiFamily: AL2
+  # amiFamily: AL2
   role: eksctl-KarpenterNodeRole-dynamic-dagger-engines-guide
   subnetSelectorTerms:
     - tags:
