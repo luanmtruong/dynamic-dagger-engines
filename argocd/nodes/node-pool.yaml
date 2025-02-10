@@ -15,9 +15,9 @@ spec:
         created-for: dagger-runners
     spec:
       nodeClassRef:
-        name: dagger-runners
+        group: karpenter.k8s.aws
         kind: EC2NodeClass
-        name: default
+        name: dagger-runners
       taints:
         - key: dagger-runners
           effect: NoSchedule
