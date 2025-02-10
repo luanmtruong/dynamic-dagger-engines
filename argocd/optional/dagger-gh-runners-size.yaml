@@ -44,7 +44,7 @@ spec:
           valuesObject:
             # githubConfigUrl is the GitHub url for where you want to configure runners
             # TODO: change this to point to your repository
-            githubConfigUrl: "https://github.com/luanmtruong/dynamic-dagger-engines"
+            githubConfigUrl: "https://github.com/kobiton"
 
             # githubConfigSecret is the k8s secrets to use when auth with GitHub API.
             # TODO: configure your github credentials on a secret and reference it

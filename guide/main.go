@@ -84,9 +84,9 @@ func (m *Guide) Up(ctx context.Context,
 	plain, _ := kubeconfig.Contents(ctx)
 	kubeconfig_sec := dag.SetSecret("kubeconfig", plain)
 
-	// if _, err := m.InstallArgo(ctx, kubeconfig_sec); err != nil {
-	// 	return nil, err
-	// }
+	if _, err := m.InstallArgo(ctx, kubeconfig_sec); err != nil {
+		return nil, err
+	}
 
 	if _, err := m.InstallArgoGenerator(ctx, kubeconfig_sec); err != nil {
 		return nil, err
