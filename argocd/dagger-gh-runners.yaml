@@ -11,7 +11,7 @@ spec:
         input:
           parameters:
             repository: "dagger/dagger"
-            min_release: v0.15.3
+            min_release: v0.15.4
         requeueAfterSeconds: 120
   template:
     metadata:
@@ -138,12 +138,12 @@ spec:
                 - name: dagger-cli
                   emptyDir: {}
       project: dagger-runners
-      syncPolicy:
-        syncOptions:
-          - CreateNamespace=true
-        automated:
-          prune: true
-          selfHeal: true
+      syncPolicy: {}
+        # syncOptions:
+        #   - CreateNamespace=true
+        # automated:
+        #   prune: false
+        #   selfHeal: false
       destination:
         server: https://kubernetes.default.svc
         namespace: "dagger-runners"

@@ -25,9 +25,22 @@ metadata:
   version: '1.32'
   tags:
     karpenter.sh/discovery: dynamic-dagger-engines-guide
- 
+
 iam:
   withOIDC: true # required by Karpenter
+  podIdentityAssociations:
+  - namespace: "karpenter"
+    serviceAccountName: karpenter
+    roleName: dynamic-dagger-engines-guide-karpenter
+    permissionPolicyARNs:
+    - arn:aws:iam::681314228305:policy/KarpenterControllerPolicy-dynamic-dagger-engines-guide
+
+iamIdentityMappings:
+- arn: "arn:aws:iam::681314228305:role/KarpenterNodeRole-dynamic-dagger-engines-guide"
+  username: system:node:{{EC2PrivateDNSName}}
+  groups:
+  - system:bootstrappers
+  - system:nodes
 
 managedNodeGroups:
   - name: core-nodes
@@ -41,13 +54,9 @@ managedNodeGroups:
     ebsOptimized: true
     propagateASGTags: true
 
-karpenter:
-  version: '1.2.1'
-  createServiceAccount: true 
-  withSpotInterruptionQueue: true
-
 addons:
   - name: aws-ebs-csi-driver
+  - name: eks-pod-identity-agent
 `
 )
 

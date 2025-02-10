@@ -30,7 +30,7 @@ spec:
         - key: "karpenter.k8s.aws/instance-size"
           operator: In
           # NOTE: you should customize this to select the instance sizes that you want
-          values: ["large", "xlarge"]
+          values: ["large", "xlarge", "2xlarge", "4xlarge"]
         - key: "topology.kubernetes.io/zone"
           operator: In
           values: ["us-east-2a", "us-east-2b", "us-east-2c"]

@@ -5,13 +5,13 @@ metadata:
   namespace: dagger-runners
 spec:
   # amiFamily: AL2
-  role: eksctl-KarpenterNodeRole-dynamic-dagger-engines-guide
+  role: KarpenterNodeRole-kobiton-k8s-manager-1
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: dynamic-dagger-engines-guide
+        karpenter.sh/discovery: kobiton-k8s-manager-1
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: dynamic-dagger-engines-guide
+        karpenter.sh/discovery: kobiton-k8s-manager-1
   amiSelectorTerms:
     - alias: al2023@latest # Amazon Linux 2023
   # Configure `/var/lib/dagger` to be an explicit filesystem. 
