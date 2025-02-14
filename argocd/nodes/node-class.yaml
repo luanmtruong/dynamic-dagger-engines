@@ -1,22 +1,20 @@
-apiVersion: karpenter.k8s.aws/v1beta1
+apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
   name: dagger-runners
   namespace: dagger-runners
 spec:
   amiFamily: AL2
+  role: KarpenterNodeRole-kobiton-k8s-manager-1
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: dynamic-dagger-engines-guide
-
+        karpenter.sh/discovery: kobiton-k8s-manager-1
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: dynamic-dagger-engines-guide
-
-  instanceProfile: eksctl-KarpenterNodeInstanceProfile-dynamic-dagger-engines-guide
-
+        karpenter.sh/discovery: kobiton-k8s-manager-1
   amiSelectorTerms:
-
+    # - alias: al2023@latest # Amazon Linux 2023
+    - name: "amazon-eks-node-1.30-*" # <- automatically upgrade when a new AL2 EKS Optimized AMI is released. This is unsafe for production workloads. Validate AMIs in lower environments before deploying them to production.
   # Configure `/var/lib/dagger` to be an explicit filesystem. 
   # This optimizes dagger engine runs by not relying on overlay-fs for the 
   # disk-heavy operations that the dagger engine does through buildkit
@@ -33,17 +31,14 @@ spec:
     sudo mount /dev/nvme1n1 /var/lib/dagger
 
     --BOUNDARY--
-
   tags:
     node-for: dagger-runners
-
   # TODO: configure disk volumes that are reasonable for your usage
   blockDeviceMappings:
   - deviceName: /dev/xvda
     ebs:
       encrypted: true
-      volumeSize: 200Gi
+      volumeSize: 100Gi
       volumeType: gp3
-
 
   detailedMonitoring: true

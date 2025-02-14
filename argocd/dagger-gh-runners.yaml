@@ -11,7 +11,7 @@ spec:
         input:
           parameters:
             repository: "dagger/dagger"
-            min_release: v0.11.3
+            min_release: v0.15.4
         requeueAfterSeconds: 120
   template:
     metadata:
@@ -20,12 +20,12 @@ spec:
       source:
         repoURL: 'ghcr.io/actions/actions-runner-controller-charts'
         chart: 'gha-runner-scale-set'
-        targetRevision: '0.8.3'
+        targetRevision: '0.10.1'
         helm:
           valuesObject:
             # githubConfigUrl is the GitHub url for where you want to configure runners
             # TODO: change this to point to your repository
-            githubConfigUrl: "https://github.com/matipan/dynamic-dagger-engines"
+            githubConfigUrl: "https://github.com/kobiton"
 
             # githubConfigSecret is the k8s secrets to use when auth with GitHub API.
             # TODO: configure your github credentials on a secret and reference it
@@ -138,12 +138,12 @@ spec:
                 - name: dagger-cli
                   emptyDir: {}
       project: dagger-runners
-      syncPolicy:
-        syncOptions:
-          - CreateNamespace=true
-        automated:
-          prune: true
-          selfHeal: true
+      syncPolicy: {}
+        # syncOptions:
+        #   - CreateNamespace=true
+        # automated:
+        #   prune: false
+        #   selfHeal: false
       destination:
         server: https://kubernetes.default.svc
         namespace: "dagger-runners"
