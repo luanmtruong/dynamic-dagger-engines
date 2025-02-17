@@ -12,14 +12,14 @@ spec:
           parameters:
             repository: "dagger/dagger"
             min_release: v0.15.4
-        requeueAfterSeconds: 120
+        requeueAfterSeconds: 360
   template:
     metadata:
       name: "dagger-nodes-{{name_slug}}"
     spec:
       source:
         repoURL: https://github.com/luanmtruong/dynamic-dagger-engines
-        targetRevision: dagger
+        targetRevision: test-dagger-runner
         path: argocd/nodes/
         kustomize:
           nameSuffix: -{{name_slug}}

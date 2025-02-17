@@ -33,7 +33,7 @@ spec:
           values: ["large", "xlarge", "2xlarge", "4xlarge"]
         - key: "topology.kubernetes.io/zone"
           operator: In
-          values: ["ap-southeast-1a", "ap-southeast-2b"]
+          values: ["us-east-2a", "us-east-2b"]
         - key: "kubernetes.io/arch"
           operator: In
           values: ["amd64"]

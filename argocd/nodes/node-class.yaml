@@ -4,17 +4,16 @@ metadata:
   name: dagger-runners
   namespace: dagger-runners
 spec:
-  amiFamily: AL2
-  role: KarpenterNodeRole-kobiton-k8s-manager-1
+  # amiFamily: AL2
+  role: eksctl-KarpenterNodeRole-dynamic-dagger-engines-guide
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: kobiton-k8s-manager-1
+        karpenter.sh/discovery: dynamic-dagger-engines-guide
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: kobiton-k8s-manager-1
+        karpenter.sh/discovery: dynamic-dagger-engines-guide
   amiSelectorTerms:
-    # - alias: al2023@latest # Amazon Linux 2023
-    - name: "amazon-eks-node-1.30-*" # <- automatically upgrade when a new AL2 EKS Optimized AMI is released. This is unsafe for production workloads. Validate AMIs in lower environments before deploying them to production.
+    - alias: al2023@latest # Amazon Linux 2023
   # Configure `/var/lib/dagger` to be an explicit filesystem. 
   # This optimizes dagger engine runs by not relying on overlay-fs for the 
   # disk-heavy operations that the dagger engine does through buildkit

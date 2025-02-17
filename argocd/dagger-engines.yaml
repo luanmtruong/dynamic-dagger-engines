@@ -12,7 +12,7 @@ spec:
           parameters:
             repository: "dagger/dagger"
             min_release: v0.15.4
-        requeueAfterSeconds: 120
+        requeueAfterSeconds: 360
   template:
     metadata:
       name: "dagger-engines-{{name_slug}}"

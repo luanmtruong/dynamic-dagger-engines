@@ -31,7 +31,7 @@ spec:
               memory_requests: "16Gi"
             - resource_id: "16c-32g"
               cpu_requests: "16"
-              memory_requests: "32g"
+              memory_requests: "32Gi"
   template:
     metadata:
       name: "dagger-runners-{{name_slug}}-{{resource_id}}"

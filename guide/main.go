@@ -53,6 +53,10 @@ managedNodeGroups:
     volumeType: gp3
     ebsOptimized: true
     propagateASGTags: true
+    taints:
+     - key: "node.cilium.io/agent-not-ready"
+       value: "true"
+       effect: "NoExecute"
 
 addons:
   - name: aws-ebs-csi-driver

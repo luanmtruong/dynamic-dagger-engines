@@ -12,7 +12,7 @@ spec:
           parameters:
             repository: "dagger/dagger"
             min_release: v0.15.4
-        requeueAfterSeconds: 120
+        requeueAfterSeconds: 360
   template:
     metadata:
       name: "dagger-runners-{{name_slug}}"
@@ -25,7 +25,7 @@ spec:
           valuesObject:
             # githubConfigUrl is the GitHub url for where you want to configure runners
             # TODO: change this to point to your repository
-            githubConfigUrl: "https://github.com/kobiton"
+            githubConfigUrl: "https://github.com/luanmtruong/dynamic-dagger-engines"
 
             # githubConfigSecret is the k8s secrets to use when auth with GitHub API.
             # TODO: configure your github credentials on a secret and reference it
@@ -138,12 +138,12 @@ spec:
                 - name: dagger-cli
                   emptyDir: {}
       project: dagger-runners
-      syncPolicy: {}
-        # syncOptions:
-        #   - CreateNamespace=true
-        # automated:
-        #   prune: false
-        #   selfHeal: false
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        automated:
+          prune: true
+          selfHeal: true
       destination:
         server: https://kubernetes.default.svc
         namespace: "dagger-runners"
